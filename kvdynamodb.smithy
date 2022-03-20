@@ -83,14 +83,19 @@ list StringList {
 @readonly
 operation Keys {
   input: KeysRequest,
-  output: StringList,
+  output: KeysResponse,
 }
 
 structure KeysRequest {
-  /// search for only keys that match a particular glob expression
+  /// pointer to the next cursor from a paginated response
   @n(0)
-  globExpression: String
-  /// optional configuration
+  cursor: String
+}
+
+structure KeysResponse {
+  @n(0)
+  @required
+  keys: StringList
   @n(1)
-  config: String
+  cursor: String
 }
