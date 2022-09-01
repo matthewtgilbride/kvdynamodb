@@ -90,6 +90,9 @@ structure KeysRequest {
   /// pointer to the next cursor from a paginated response
   @n(0)
   cursor: String
+  /// maximum number of keys to return
+  @n(1)
+  limit: U32
 }
 
 structure KeysResponse {

@@ -112,6 +112,9 @@ pub struct KeysRequest {
     /// pointer to the next cursor from a paginated response
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cursor: Option<String>,
+    /// maximum number of keys to return
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u32>,
 }
 
 // Encode KeysRequest as CBOR and append to output stream
@@ -120,9 +123,14 @@ pub fn encode_keys_request<W: wasmbus_rpc::cbor::Write>(
     e: &mut wasmbus_rpc::cbor::Encoder<W>,
     val: &KeysRequest,
 ) -> RpcResult<()> {
-    e.array(1)?;
+    e.array(2)?;
     if let Some(val) = val.cursor.as_ref() {
         e.str(val)?;
+    } else {
+        e.null()?;
+    }
+    if let Some(val) = val.limit.as_ref() {
+        e.u32(*val)?;
     } else {
         e.null()?;
     }
@@ -136,6 +144,7 @@ pub fn decode_keys_request(
 ) -> Result<KeysRequest, RpcError> {
     let __result = {
         let mut cursor: Option<Option<String>> = Some(None);
+        let mut limit: Option<Option<u32>> = Some(None);
 
         let is_array = match d.datatype()? {
             wasmbus_rpc::cbor::Type::Array => true,
@@ -162,6 +171,14 @@ pub fn decode_keys_request(
                             Some(Some(d.str()?.to_string()))
                         }
                     }
+                    1 => {
+                        limit = if wasmbus_rpc::cbor::Type::Null == d.datatype()? {
+                            d.skip()?;
+                            Some(None)
+                        } else {
+                            Some(Some(d.u32()?))
+                        }
+                    }
 
                     _ => d.skip()?,
                 }
@@ -182,12 +199,21 @@ pub fn decode_keys_request(
                             Some(Some(d.str()?.to_string()))
                         }
                     }
+                    "limit" => {
+                        limit = if wasmbus_rpc::cbor::Type::Null == d.datatype()? {
+                            d.skip()?;
+                            Some(None)
+                        } else {
+                            Some(Some(d.u32()?))
+                        }
+                    }
                     _ => d.skip()?,
                 }
             }
         }
         KeysRequest {
             cursor: cursor.unwrap(),
+            limit: limit.unwrap(),
         }
     };
     Ok(__result)

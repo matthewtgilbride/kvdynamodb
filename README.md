@@ -1,4 +1,3 @@
-# Interface for the Factorial service, wasmcloud:example:factorial
+# Interface for the aws:kvdynamodb service
 
-This is an interface for a simple service that calculates
-the fatorial of a whole number.
+Provides a simple key/value interface to an AWS Dynamo table.
